@@ -4,13 +4,17 @@ import db from './config/db.js'
 
 const app = express()
 
+app.use(express.urlencoded({extended: true}))
+
 try {
     await db.authenticate();
+    db.sync()
     console.log('Conexion Full')
 } catch (error) {
     console.log(error)
 }
-const port = 4500
+
+const port = 5000
 
 app.use('/auth', usuarioRoutes)
 
