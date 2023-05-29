@@ -1,5 +1,6 @@
 import { check, validationResult } from 'express-validator'
 import Usuario from '../models/Usuario.js'
+import { generarId } from '../helpers/tokens.js'
 
 const fomularioLogin = (req, res) =>{
     res.render('auth/login', {
@@ -16,20 +17,52 @@ const registrar = async (req, res)=>{
     await check('nombre').notEmpty().withMessage('El nombre no puede ir vacio').run(req)
     await check('email').isEmail().withMessage('No es un correo valido ').run(req)
     await check('password').isLength({min: 6}).withMessage('Minimo deden ser 6 caracteres la contraseña').run(req)
-    await check('repitePassword').equals('password').withMessage('las contraseñas no son iguales').run(req)
+    await check('repitePassword').notEmpty().withMessage('las contraseñas no son iguales').run(req)
 
     let resultado = validationResult(req)
     // verify user Empty
 
-    if(!resultado.isEmpty()){
+    if(!resultado.isEmpty()){ 
         return res.render('auth/registro',{
             pagina: 'Crear Cuenta',
-            errores: resultado.array()
+            errores: resultado.array(),
+            usuario:{
+                nombre: req.body.nombre,
+                email: req.body.email
+            }
         })
     }
+   
+    // Extraer los datos
+    const  {nombre, email, password } = req.body
+
+    // verificar el usario no este duplicado
+    const existeUsuario = await  Usuario.findOne({ where : { email : email }})
  
-    const usuario = await Usuario.create(req.body) 
-    res.json(usuario)
+    if(existeUsuario) {
+         return res.render('auth/registro',{
+            pagina: 'Crear Cuenta',
+            errores: [{msg: 'El usuario ya se enecuntra registrado'}],
+            usuario: {
+                nombre: req.body.nombre,
+                email: req.body.email
+            }
+        })
+    } 
+
+    // const usuario = await Usuario.create(req.body) 
+    // res.json(usuario)
+    // console.log(existeUsuario)
+    // return;
+
+    // Almacenar
+    await Usuario.create({
+        nombre,
+        email,
+        password,
+        token: generarId()
+    })
+   
 }
 
 const formulairoOlvidePassword = (req, res)=>{
