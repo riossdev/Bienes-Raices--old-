@@ -42,11 +42,13 @@ const registrar = async (req, res)=>{
     if(existeUsuario) {
          return res.render('auth/registro',{
             pagina: 'Crear Cuenta',
-            errores: [{msg: 'El usuario ya se enecuntra registrado'}],
+            errores: [{msg: 'El usuari o ya se enecuntra registrado'}],
             usuario: {
                 nombre: req.body.nombre,
                 email: req.body.email
+        
             }
+            
         })
     } 
 
@@ -54,7 +56,7 @@ const registrar = async (req, res)=>{
     // res.json(usuario)
     // console.log(existeUsuario)
     // return;
-
+  
     // Almacenar
     await Usuario.create({
         nombre,
@@ -62,7 +64,12 @@ const registrar = async (req, res)=>{
         password,
         token: generarId()
     })
-   
+    
+    //    Message User
+    res.render('templates/mensaje',{
+        pagina: 'Cuenta Creada Correctamente',
+        mensaje: 'Hemos enviado un Email de confirmación, presiona en el enlace'
+    })
 }
 
 const formulairoOlvidePassword = (req, res)=>{
